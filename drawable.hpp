@@ -13,7 +13,7 @@ struct Point {
 };
 
 template <typename T> class Drawable {
-  template <class T2> friend class Drawable;
+  template <typename T2> friend class Drawable;
 
 private:
   static constexpr int image_cols = T::image_array.size();
@@ -52,6 +52,9 @@ public:
   double x, y;
 
   Drawable(double a, double b) : x{a}, y{b} {};
+
+  static Drawable<T> generate(double a, double b) { return Drawable<T>(a, b); };
+
   void draw() const {
     for (size_t i = 0; i < image.size(); ++i) {
       int yi = image[i].y;
