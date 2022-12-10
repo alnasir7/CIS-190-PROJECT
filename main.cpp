@@ -1,7 +1,9 @@
 #include "character.hpp"
+#include "drawablecollection.hpp"
 #include "obstacle.hpp"
-#include <ncurses.h>
+#include <iostream>
 #include <memory>
+#include <ncurses.h>
 
 void debug(const char *str, ...) {
   // #ifndef _DEBUG
@@ -20,6 +22,7 @@ using namespace std;
 int main() {
   int ch;
 
+  setlocale(LC_ALL, "");
   initscr();            /* Start curses mode 		*/
   start_color();        /* Start the color functionality */
   cbreak();             /* Line buffering disabled, Pass on
@@ -29,42 +32,79 @@ int main() {
   noecho();
   init_pair(1, COLOR_CYAN, COLOR_BLACK);
 
+  int high_score = 0;
+  bool running = true;
+  while (running) {
 
-  shared_ptr<Character> c = make_shared<Character> (5, LINES-8);
-  shared_ptr<Obstacle> o = make_shared<Obstacle> (30, LINES-8);
-  timeout(100);
-  while ((ch = getch()) != KEY_F(1)) {
-    switch (ch) {
-    case 'a':
-      c->jump(1);
-      break;
-    case 's':
-    case ' ':
-      c->jump(0);
-      break;
-    case 'd':
-      c->jump(-1);
+    shared_ptr<Character> c = make_shared<Character>(8, LINES - 8);
+
+    unique_ptr<ObstacleCollection> obstacles =
+        make_unique<ObstacleCollection>();
+    timeout(33); // 16 is about 60 fps, 33 is about 30
+    int cnt = 0;
+    while ((ch = getch()) != KEY_F(1)) {
+      switch (ch) {
+      case 'a':
+        c->jump(0.2);
+        break;
+      case 's':
+      case ' ':
+        c->jump(0);
+        break;
+      case 'd':
+        c->jump(-0.2);
+      }
+      clear_screen();
+      debug("%d, %d, %f, %d, %d, %d", c->x, c->y, c->dy, c->jumping,
+            c->can_jump, obstacles->size());
+      c->draw();
+      c->update();
+
+      obstacles->draw();
+      obstacles->update();
+
+      if (obstacles->collides_with_character(c)) {
+        break;
+      }
+
+      if (++cnt % 50 == 1) {
+        obstacles->generate();
+      }
+
+      attron(COLOR_PAIR(1));
+      mvprintw(5, 2,
+               "Press A to jump high, S/SPACE to normal jump, "
+               "D to barely jump");
+      mvprintw(6, 2, "Score: %d", cnt / 10);
+      attroff(COLOR_PAIR(1));
     }
     clear_screen();
-    debug("%d, %d, %f, %d, %d", c->x, c->y, c->dy, c->jumping, c->can_jump);
-    c->draw();
-    c->update();
-
-    o->draw();
-    o->update();
-
-    if (c->collides(o.get())) {
-      break;
-    }
-
+    high_score = max(high_score, cnt / 10);
     attron(COLOR_PAIR(1));
-    mvprintw(5, 2, "Press F1 to exit. Press A to jump high, S/SPACE to normal jump, D to barely jump");
+    mvprintw(5, 2, "Your score is: %d", cnt / 10);
+    mvprintw(6, 2, "Your high score is: %d", high_score);
     attroff(COLOR_PAIR(1));
+
+    timeout(-1);
+    while ((ch = getch()) != ' ' && ch != 'n')
+      ;
+    switch (ch) {
+    case ' ':
+      continue;
+    case 'n':
+      running = false;
+      break;
+    default:
+        // should not run
+        // no op
+        ;
+    }
   }
+
   endwin(); /* End curses mode		  */
+  cout << "High score: " << high_score << endl;
   return 0;
 }
-
 
 void clear_screen() {
   int x, y, w, h;

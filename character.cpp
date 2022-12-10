@@ -17,7 +17,7 @@ using namespace std;
 //   }
 // }
 
-void Character::update() {
+bool Character::update() {
   y  += dy;
   if (y >= init_y) {
     y = init_y;
@@ -26,12 +26,13 @@ void Character::update() {
     dy = 0;
   }
   if (jumping) {
-    ++dy;
+    dy += 0.05;
   }
+  return false;
 }
-void Character::jump(int jump_strength) {
+void Character::jump(double jump_strength) {
   if (can_jump){
-    dy = -5 + -jump_strength;
+    dy = -1.0 + -jump_strength;
     jumping = true;
     can_jump = false;
   }

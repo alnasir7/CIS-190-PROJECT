@@ -4,19 +4,36 @@
 #include "ncurses.h"
 #include <algorithm>
 #include <array>
-#include <vector>
 #include <iostream>
+#include <vector>
+
 struct Point {
   int x, y;
   char c;
 };
 
-struct ImageArray {
+template <typename T> class Drawable {
+  template <class T2> friend class Drawable;
 
-  template <int sizeA, int sizeB, int sizeC>
-  static constexpr const std::array<Point, sizeC>
-  image_to_array(std::array<std::array<char, sizeA>, sizeB> image_array) {
-    std::array<Point, sizeC> ret = {};
+private:
+  static constexpr int image_cols = T::image_array.size();
+  static constexpr int image_rows = T::image_array[0].size();
+
+  static constexpr int image_non_empty = [](auto &image_array) {
+    int cnt = 0;
+    for (auto j = 0; j < image_array.size(); ++j) {
+      for (auto i = 0; i < image_array[j].size(); ++i) {
+        if (image_array[j][i] != ' ') {
+          ++cnt;
+        }
+      }
+    }
+    return cnt;
+  }(T::image_array);
+
+  static constexpr const std::array<Point, image_non_empty>
+  image_to_array(auto &image_array) {
+    std::array<Point, image_non_empty> ret = {};
     int cnt = 0;
     for (auto j = 0; j < image_array.size(); ++j) {
       for (auto i = 0; i < image_array[j].size(); ++i) {
@@ -27,35 +44,39 @@ struct ImageArray {
     }
     return ret;
   }
-};
 
-template <typename T, int sizeA, int sizeB, int sizeC> class Drawable {
-private:
-  static constexpr std::array<Point, sizeC> image =
-      ImageArray::image_to_array<sizeA, sizeB, sizeC>(T::image_array);
+  static constexpr std::array<Point, image_non_empty> image =
+      image_to_array(T::image_array);
 
 public:
-  int x, y;
+  double x, y;
 
-  Drawable(int a, int b) : x{a}, y{b} {};
-  void draw() {
+  Drawable(double a, double b) : x{a}, y{b} {};
+  void draw() const {
     for (size_t i = 0; i < image.size(); ++i) {
       int yi = image[i].y;
       int xi = image[i].x;
       char ci = image[i].c;
-      mvaddch(y + yi, x + xi, ci);
+      mvaddch(y - image_cols + yi, x - image_rows + xi, ci);
     }
   }
-  template <typename T1, int sizeA1, int sizeB1, int sizeC1>
-  bool collides(Drawable<T1, sizeA1, sizeB1, sizeC1> *other) {
-    return std::max(0, std::min(x + sizeA, other->x + sizeA1) -
-                           std::max(x, other->x)) *
-               std::max(0, std::min(y + sizeB, other->y + sizeB1) -
-                               std::max(y, other->y)) !=
+  template <typename T1> bool collides(Drawable<T1> const *other) const {
+    return std::max(0.0,
+                    std::min(x + image_cols, other->x + other->image_cols) -
+                        std::max(x, other->x)) *
+               std::max(0.0,
+                        std::min(y + image_rows, other->y + other->image_rows) -
+                            std::max(y, other->y)) !=
            0;
   }
 
-  virtual void update() { --x; }
+  // Update location of the drawable object
+  // If the new location would make the object out of screen (to the left)
+  // Return True, else False
+  virtual bool update() {
+    x -= 1;
+    return x < 0;
+  }
 };
 
 #endif

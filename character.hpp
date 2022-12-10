@@ -4,25 +4,23 @@
 #include <vector>
 #include <array>
 #include "drawable.hpp"
+#include "ncurses.h"
 
 
 struct CharacterImage {
-  static constexpr std::array<std::array<char, 3>, 3> image_array {{
-    {'.', ' ', '.'},
-    {' ', '.', ' '},
-    {'.', ' ', '.'}
-    }};
+  static constexpr std::array<std::array<char, 3>, 4> image_array{
+    {{' ', '#', '#'}, {' ', '#', ' '}, {'#', '#', '#'}, {'#', ' ', '#'}}};
 };
 
-class Character: public Drawable<CharacterImage, 3, 3, 5> {
+class Character: public Drawable<CharacterImage> {
 private:
 
 public:
   bool jumping, can_jump;
-  int init_y, dy;
-  Character(int a, int b) : Drawable(a, b), can_jump{true}, init_y{b} {};
-  void update() override;
-  void jump(int);
+  double init_y, dy;
+  Character(double a, double b) : Drawable(a, b), can_jump{true}, init_y{b} {};
+  bool update() override;
+  void jump(double);
 };
 
 #endif
