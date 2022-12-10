@@ -3,6 +3,11 @@
 
 ## Project Description
 
+```console
+foo@bar:CIS-190-PROJECT$ make
+foo@bar:CIS-190-PROJECT$ ./dinogame
+```
+
 We are planning to implement an interactive dinasour game on the terminal. We will clear the terminal at each game tick and redraw it again. We will use getch function to immediatly capture keyboard entries.
 
 Some of the features that we expect to use are the following:
