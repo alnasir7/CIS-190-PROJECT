@@ -5,7 +5,6 @@
 #include "drawablecollection.hpp"
 #include "ncurses.h"
 #include <array>
-#include <vector>
 
 template <typename T> class Obstacle : public Drawable<T> {
 public:

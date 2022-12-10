@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <ncurses.h>
+#include "birds.hpp"
 
 void debug(const char *str, ...) {
   // #ifndef _DEBUG
@@ -40,6 +41,8 @@ int main() {
 
     unique_ptr<ObstacleCollection> obstacles =
         make_unique<ObstacleCollection>();
+    unique_ptr<BirdCollection> birds =
+      make_unique<BirdCollection>();
     timeout(33); // 16 is about 60 fps, 33 is about 30
     int cnt = 0;
     while ((ch = getch()) != KEY_F(1)) {
@@ -63,11 +66,15 @@ int main() {
       obstacles->draw();
       obstacles->update();
 
+      birds->draw();
+      birds->update();
+
       if (obstacles->collides_with_character(c)) {
         break;
       }
 
       if (++cnt % 50 == 1) {
+        birds->generate();
         obstacles->generate();
       }
 
@@ -83,6 +90,8 @@ int main() {
     attron(COLOR_PAIR(1));
     mvprintw(5, 2, "Your score is: %d", cnt / 10);
     mvprintw(6, 2, "Your high score is: %d", high_score);
+    mvprintw(7, 2, "Press SPACE to play again", high_score);
+    mvprintw(8, 2, "Press N to exit", high_score);
     attroff(COLOR_PAIR(1));
 
     timeout(-1);
