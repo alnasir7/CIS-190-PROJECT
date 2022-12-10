@@ -10,7 +10,9 @@ template <typename T> class Obstacle : public Drawable<T> {
 public:
   // All obstacles start outside of screen at same x and y value
   Obstacle() : Drawable<T>(COLS, LINES - 8){};
+  Obstacle(int x) : Drawable<T>(x, LINES - 8){};
   static Obstacle<T> generate() { return {}; }
+  static Obstacle<T> generate_x(int x) { return Obstacle(x); }
 };
 
 struct ObstacleImage1 {

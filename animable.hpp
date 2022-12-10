@@ -13,6 +13,7 @@ private:
 
 public:
   static Animable<SPEED, Ts...> generate() { return {}; }
+  static Animable<SPEED, Ts...> generate_x(int x) { return {}; }
 
   bool update() {
     for (auto &image : image_list) {

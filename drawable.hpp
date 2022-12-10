@@ -16,8 +16,8 @@ template <typename T> class Drawable {
   template <typename T2> friend class Drawable;
 
 private:
-  static constexpr int image_cols = T::image_array.size();
-  static constexpr int image_rows = T::image_array[0].size();
+  static constexpr int image_cols = T::image_array[0].size();
+  static constexpr int image_rows = T::image_array.size();
 
   static constexpr int image_non_empty = [](auto &image_array) {
     int cnt = 0;
@@ -60,16 +60,20 @@ public:
       int yi = image[i].y;
       int xi = image[i].x;
       char ci = image[i].c;
-      mvaddch(y - image_cols + yi, x - image_rows + xi, ci);
+      mvaddch(y - image_rows + yi, x - image_cols + xi, ci);
     }
   }
   template <typename T1> bool collides(Drawable<T1> const *other) const {
-    return std::max(0.0,
-                    std::min(x + image_cols, other->x + other->image_cols) -
-                        std::max(x, other->x)) *
-               std::max(0.0,
-                        std::min(y + image_rows, other->y + other->image_rows) -
-                            std::max(y, other->y)) !=
+    int i_x = x;
+    int i_y = y;
+    int i2_x = other->x;
+    int i2_y = other->y;
+    return std::max(0,
+                    std::min(i_x + image_cols, i2_x + other->image_cols) -
+                        std::max(i_x, i2_x)) *
+               std::max(0,
+                        std::min(i_y + image_rows, i2_y + other->image_rows) -
+                            std::max(i_y, i2_y)) !=
            0;
   }
 

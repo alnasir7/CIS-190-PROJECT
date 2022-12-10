@@ -1,10 +1,11 @@
+#include "birds.hpp"
 #include "character.hpp"
 #include "drawablecollection.hpp"
 #include "obstacle.hpp"
 #include <iostream>
 #include <memory>
 #include <ncurses.h>
-#include "birds.hpp"
+#include "groundmarks.hpp"
 
 void debug(const char *str, ...) {
   // #ifndef _DEBUG
@@ -32,6 +33,8 @@ int main() {
   curs_set(0);          // hide cursor
   noecho();
   init_pair(1, COLOR_CYAN, COLOR_BLACK);
+  init_pair(2, COLOR_BLUE, COLOR_BLACK);
+  init_pair(3, COLOR_RED, COLOR_BLACK);
 
   int high_score = 0;
   bool running = true;
@@ -40,9 +43,9 @@ int main() {
     shared_ptr<Character> c = make_shared<Character>(8, LINES - 8);
 
     unique_ptr<ObstacleCollection> obstacles =
-        make_unique<ObstacleCollection>();
-    unique_ptr<BirdCollection> birds =
-      make_unique<BirdCollection>();
+        make_unique<ObstacleCollection>(50);
+    unique_ptr<BirdCollection> birds = make_unique<BirdCollection>(200);
+    unique_ptr<GroundMarkCollection> groundmarks = make_unique<GroundMarkCollection>(5, true);
     timeout(33); // 16 is about 60 fps, 33 is about 30
     int cnt = 0;
     while ((ch = getch()) != KEY_F(1)) {
@@ -58,25 +61,33 @@ int main() {
         c->jump(-0.2);
       }
       clear_screen();
+      move(LINES - 10, 0);
+      hline('_', COLS);
       debug("%d, %d, %f, %d, %d, %d", c->x, c->y, c->dy, c->jumping,
             c->can_jump, obstacles->size());
-      c->draw();
-      c->update();
 
-      obstacles->draw();
+      groundmarks->update();
+      groundmarks->draw();
+
       obstacles->update();
+      attron(COLOR_PAIR(3));
+      obstacles->draw();
+      attroff(COLOR_PAIR(3));
 
-      birds->draw();
       birds->update();
+      attron(COLOR_PAIR(2));
+      birds->draw();
+      attroff(COLOR_PAIR(2));
+
+      c->update();
+      c->draw();
+      refresh();
 
       if (obstacles->collides_with_character(c)) {
         break;
       }
 
-      if (++cnt % 50 == 1) {
-        birds->generate();
-        obstacles->generate();
-      }
+      ++cnt;
 
       attron(COLOR_PAIR(1));
       mvprintw(5, 2,
@@ -85,13 +96,12 @@ int main() {
       mvprintw(6, 2, "Score: %d", cnt / 10);
       attroff(COLOR_PAIR(1));
     }
-    clear_screen();
     high_score = max(high_score, cnt / 10);
     attron(COLOR_PAIR(1));
-    mvprintw(5, 2, "Your score is: %d", cnt / 10);
-    mvprintw(6, 2, "Your high score is: %d", high_score);
-    mvprintw(7, 2, "Press SPACE to play again", high_score);
-    mvprintw(8, 2, "Press N to exit", high_score);
+    mvprintw(5, 60, "Your score is: %d", cnt / 10);
+    mvprintw(6, 60, "Your high score is: %d", high_score);
+    mvprintw(7, 60, "Press SPACE to play again", high_score);
+    mvprintw(8, 60, "Press N to exit", high_score);
     attroff(COLOR_PAIR(1));
 
     timeout(-1);

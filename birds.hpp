@@ -12,8 +12,14 @@ template <typename T> class Bird : public Drawable<T> {
 public:
   // All birds start outside of screen at same x and y value
   // TODO change?
-  Bird() : Drawable<T>(COLS, LINES - 18){};
+  Bird() : Drawable<T>(COLS, LINES - 22){};
+  Bird(int x) : Drawable<T>(x, LINES - 22){};
   static Bird<T> generate() { return {}; };
+  static Bird<T> generate_x(int x) { return Bird(x); }
+  bool update() override {
+    this->x -= 0.3;
+    return this->x < 0;
+  }
 };
 
 struct BirdImage1 {
