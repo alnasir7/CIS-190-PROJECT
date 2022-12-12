@@ -55,7 +55,7 @@ public:
 
   static Drawable<T> generate(double a, double b) { return Drawable<T>(a, b); };
 
-  void draw() const {
+  virtual void draw() const {
     for (size_t i = 0; i < image.size(); ++i) {
       int yi = image[i].y;
       int xi = image[i].x;

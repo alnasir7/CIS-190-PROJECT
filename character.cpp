@@ -17,23 +17,9 @@ using namespace std;
 //   }
 // }
 
-bool Character::update() {
-  y  += dy;
-  if (y >= init_y) {
-    y = init_y;
-    jumping = false;
-    can_jump = true;
-    dy = 0;
-  }
-  if (jumping) {
-    dy += 0.05;
-  }
-  return false;
-}
-void Character::jump(double jump_strength) {
-  if (can_jump){
-    dy = -1.0 + -jump_strength;
-    jumping = true;
-    can_jump = false;
-  }
-}
+// bool Character::update() {
+ 
+// }
+// void Character::jump(double jump_strength) {
+  
+// }

@@ -32,21 +32,24 @@ int main() {
   keypad(stdscr, TRUE); /* I need that nifty F1 	*/
   curs_set(0);          // hide cursor
   noecho();
-  init_pair(1, COLOR_CYAN, COLOR_BLACK);
-  init_pair(2, COLOR_BLUE, COLOR_BLACK);
-  init_pair(3, COLOR_RED, COLOR_BLACK);
+  init_pair(1, COLOR_RED, COLOR_BLACK);
+  init_pair(2, COLOR_CYAN, COLOR_BLACK);
+  init_pair(3, COLOR_BLUE, COLOR_BLACK);
+  init_pair(4, COLOR_GREEN, COLOR_BLACK);
+  init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(6, COLOR_YELLOW, COLOR_BLACK);
 
   int high_score = 0;
   bool running = true;
   while (running) {
 
-    shared_ptr<Character> c = make_shared<Character>(8, LINES - 8);
+    shared_ptr<CharacterAnimate> c = make_shared<CharacterAnimate>();
 
     unique_ptr<ObstacleCollection> obstacles =
-        make_unique<ObstacleCollection>(50);
-    unique_ptr<BirdCollection> birds = make_unique<BirdCollection>(200);
-    unique_ptr<GroundMarkCollection> groundmarks = make_unique<GroundMarkCollection>(5, true);
-    timeout(33); // 16 is about 60 fps, 33 is about 30
+      make_unique<ObstacleCollection>(50, false, true);
+    unique_ptr<BirdCollection> birds = make_unique<BirdCollection>(50, false, true);
+    unique_ptr<GroundMarkCollection> groundmarks = make_unique<GroundMarkCollection>(5, true, false);
+    timeout(16); // 16 is about 60 fps, 33 is about 30
     int cnt = 0;
     while ((ch = getch()) != KEY_F(1)) {
       switch (ch) {
@@ -63,21 +66,24 @@ int main() {
       clear_screen();
       move(LINES - 10, 0);
       hline('_', COLS);
-      debug("%d, %d, %f, %d, %d, %d", c->x, c->y, c->dy, c->jumping,
-            c->can_jump, obstacles->size());
+
+      attron(COLOR_PAIR(2));
+      mvprintw(5, 2,
+               "Press A to jump high, S/SPACE to normal jump, "
+               "D to barely jump");
+      mvprintw(6, 2, "Score: %d", cnt / 10);
+      attroff(COLOR_PAIR(2));
 
       groundmarks->update();
       groundmarks->draw();
 
       obstacles->update();
-      attron(COLOR_PAIR(3));
+      attron(COLOR_PAIR(1));
       obstacles->draw();
-      attroff(COLOR_PAIR(3));
+      attroff(COLOR_PAIR(1));
 
       birds->update();
-      attron(COLOR_PAIR(2));
       birds->draw();
-      attroff(COLOR_PAIR(2));
 
       c->update();
       c->draw();
@@ -88,13 +94,6 @@ int main() {
       }
 
       ++cnt;
-
-      attron(COLOR_PAIR(1));
-      mvprintw(5, 2,
-               "Press A to jump high, S/SPACE to normal jump, "
-               "D to barely jump");
-      mvprintw(6, 2, "Score: %d", cnt / 10);
-      attroff(COLOR_PAIR(1));
     }
     high_score = max(high_score, cnt / 10);
     attron(COLOR_PAIR(1));
